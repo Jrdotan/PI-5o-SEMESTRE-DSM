@@ -1,24 +1,15 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { IsEmail, IsNotEmpty } from 'class-validator';
-import { User } from '@prisma/client';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
 
 export class LoginDto {
-  @IsEmail()
+  @IsEmail() 
   @IsNotEmpty()
   email: string;
+
 
   @IsNotEmpty()
   password: string;
@@ -31,11 +22,11 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   async login(@Body() loginDto: LoginDto) {
-    const user: User = await this.authService.validateUser(
+    const user = await this.authService.validateUser(
       loginDto.email,
       loginDto.password,
     );
-
+    
     return this.authService.login(user);
   }
 
@@ -50,25 +41,9 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('hello')
-  getHello(): string {
-    return "{ message: 'Hello World!' }";
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(200)
   async logout(@Req() req) {
-    const user = req.user as { userId?: number };
-
-    if (!user?.userId) {
-      throw new HttpException(
-        'User ID not found in request',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-    await this.authService.logout(user.userId);
-
-    return { message: 'Logged out successfully' };
+    return this.authService.logout(req.user.sub);
   }
 }

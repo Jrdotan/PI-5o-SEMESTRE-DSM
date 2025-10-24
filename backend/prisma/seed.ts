@@ -4,9 +4,11 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // data cleanup
+
+    // data cleanup
   await prisma.user.deleteMany();
   await prisma.store.deleteMany();
+
 
   //create a store
   const store = await prisma.store.create({
